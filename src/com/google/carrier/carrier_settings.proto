@@ -147,6 +147,10 @@ message ApnItem {
     SKIP_464XLAT_ENABLE = 2;
   }
   optional Xlat skip_464xlat = 26 [default = SKIP_464XLAT_DEFAULT];
+
+  optional string lingering_network_type_bitmask = 27 [default = "0"];
+  optional bool always_on = 28 [default = false];
+  optional int32 mtu_v6 = 29 [default = 0];
 }
 
 // A collection of all APNs for a carrier
