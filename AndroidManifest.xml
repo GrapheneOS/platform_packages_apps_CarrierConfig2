@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="app.grapheneos.carrierconfig2">
+
+    <uses-permission android:name="android.permission.MODIFY_PHONE_STATE" />
+    <!-- for checking carrier packages-->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <!-- for reading IMSI-->
+    <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_APN_SETTINGS" />
+
+    <application
+        android:label="CarrierConfig2"
+        android:defaultToDeviceProtectedStorage="true"
+        android:directBootAware="true">
+
+        <service
+            android:name=".CarrierServiceImpl"
+            android:permission="android.permission.BIND_CARRIER_SERVICES"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.carrier.CarrierService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".ApnServiceImpl"
+            android:permission="android.permission.WRITE_APN_SETTINGS"
+            android:exported="true" />
+
+    </application>
+</manifest>

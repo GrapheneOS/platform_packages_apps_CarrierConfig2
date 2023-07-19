@@ -1,0 +1,32 @@
+android_app {
+    name: "CarrierConfig2",
+
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.proto",
+    ],
+
+    privileged: true,
+    platform_apis: true,
+    system_ext_specific: true,
+
+    static_libs: [
+        "libprotobuf-java-lite",
+    ],
+
+    proto: {
+        type: "lite",
+    },
+
+    required: [
+        "privapp-permissions_app.grapheneos.carrierconfig2.xml",
+    ],
+}
+
+prebuilt_etc {
+    name: "privapp-permissions_app.grapheneos.carrierconfig2.xml",
+    src:  "privapp-permissions_app.grapheneos.carrierconfig2.xml",
+    sub_dir: "permissions",
+    system_ext_specific: true,
+    filename_from_src: true,
+}
