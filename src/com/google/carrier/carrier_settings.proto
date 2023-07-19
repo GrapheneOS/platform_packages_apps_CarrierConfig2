@@ -20,6 +20,11 @@ package com.google.carrier;
 option java_multiple_files = true;
 option java_outer_classname = "CarrierSettingsProtos";
 
+message Timestamp {
+  required int64 seconds = 1;
+  optional int32 nanos = 2;
+}
+
 // Settings of one carrier, including apns and configs
 // This is the payload to be delivered from server
 message CarrierSettings {
@@ -39,6 +44,8 @@ message CarrierSettings {
 
   // Vendor carrier configs
   optional VendorConfigs vendor_configs = 6;
+
+  optional Timestamp last_updated = 8;
 }
 
 // A collection of multiple carriers’ settings
@@ -48,6 +55,8 @@ message MultiCarrierSettings {
 
   // List of CarrierSettings
   repeated CarrierSettings setting = 2;
+
+  optional Timestamp last_updated = 4;
 }
 
 // An access point name (aka. APN) entry
