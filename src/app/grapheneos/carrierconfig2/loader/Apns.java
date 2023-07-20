@@ -84,7 +84,8 @@ public class Apns {
         cv.put(Telephony.Carriers.BEARER_BITMASK, bearerBitmaskInt);
 
         cv.put(Telephony.Carriers.MTU, i.getMtu());
-        cv.put(Telephony.Carriers.MTU_V4, i.getMtu());
+        // Google's CarrierSettings app doesn't set MTU_V4 as of version 41, despite MTU field
+        // being deprecated
         if (i.hasProfileId()) {
             cv.put(Telephony.Carriers.PROFILE_ID, i.getProfileId());
         }
