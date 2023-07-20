@@ -23,7 +23,7 @@ public class CarrierServiceImpl extends CarrierService {
             return null;
         }
 
-        return CarrierConfigLoader.load(getApplicationContext(), csd, carrierId, true);
+        return new CarrierConfigLoader(getApplicationContext(), csd).load(carrierId);
     }
 
     @Override

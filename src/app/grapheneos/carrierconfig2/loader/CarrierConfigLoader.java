@@ -24,22 +24,39 @@ public class CarrierConfigLoader {
     private static final CarrierIdentifier DEFAULT_CARRIER_ID = new CarrierIdentifier("000", "000",
             null, null, null, null);
 
-    // carrierId is null when SIM is missing
-    public static PersistableBundle load(Context ctx, CSettingsDir csd, @Nullable CarrierIdentifier carrierId, boolean updateApns) {
+    private final Context context;
+    private final CSettingsDir csd;
+    private boolean filteringEnabled = true;
+    private boolean apnUpdateAllowed = true;
 
+    public CarrierConfigLoader(Context context, CSettingsDir csd) {
+        this.context = context;
+        this.csd = csd;
+    }
+
+    public void disableFiltering() {
+        filteringEnabled = false;
+    }
+
+    public void skipApnUpdate() {
+        apnUpdateAllowed = false;
+    }
+
+    // carrierId is null when SIM is missing
+    public PersistableBundle load(@Nullable CarrierIdentifier carrierId) {
         CSettings cSettings = null;
         if (carrierId != null) {
             cSettings = CSettings.get(csd, carrierId);
 
-            if (cSettings != null && updateApns) {
+            if (cSettings != null && apnUpdateAllowed) {
                 // OS doesn't request the APNs itself (except for ApnService.onRestoreApns()), carrier
                 // config app is expected to update APNs on its own.
 
-                if (isCurrentApnCSettingsVersion(ctx, cSettings)) {
+                if (isCurrentApnCSettingsVersion(cSettings)) {
                     Log.d(TAG, "CSettings version hasn't changed, skipping APN update");
                 } else {
-                    Apns.update(ctx, cSettings);
-                    storeApnCSettingsVersion(ctx, cSettings);
+                    Apns.update(context, cSettings);
+                    storeApnCSettingsVersion(cSettings);
                 }
             }
         }
@@ -50,36 +67,40 @@ public class CarrierConfigLoader {
         if (defaults != null) {
             // settings for default carrier ID are used as a base, carrier-specific settings are
             // applied on top
-            bundle.putAll(cSettingsToBundle(ctx, defaults));
+            bundle.putAll(cSettingsToBundle(defaults));
         }
 
         if (cSettings != null) {
-            bundle.putAll(cSettingsToBundle(ctx, cSettings));
-            addVersionString(ctx, cSettings, false, bundle);
+            bundle.putAll(cSettingsToBundle(cSettings));
+            addVersionString(cSettings, false, bundle);
         } else if (defaults != null) {
-            addVersionString(ctx, defaults, true, bundle);
+            addVersionString(defaults, true, bundle);
         } else {
             return null;
         }
         return bundle;
     }
 
-    private static PersistableBundle cSettingsToBundle(Context ctx, CSettings cs) {
-        return carrierConfigToBundle(ctx, cs.protoCSettings.getConfigs());
+    private PersistableBundle cSettingsToBundle(CSettings cs) {
+        return carrierConfigToBundle(cs.protoCSettings.getConfigs());
     }
 
-    private static PersistableBundle carrierConfigToBundle(Context ctx, CarrierConfig cc) {
+    private PersistableBundle carrierConfigToBundle(CarrierConfig cc) {
         List<CarrierConfig.Config> configs = cc.getConfigList();
         var bundle = new PersistableBundle(configs.size());
 
         String TAG = "carrierConfigToBundle";
+
+        Context ctx = context;
+        boolean filteringEnabled = this.filteringEnabled;
 
         for (CarrierConfig.Config c : configs) {
             String k = c.getKey();
 
             switch (c.getValueCase()) {
                 case TEXT_VALUE: {
-                    String v = Filters.filterTextValue(ctx, k, c.getTextValue());
+                    String orig = c.getTextValue();
+                    String v = filteringEnabled ? Filters.filterTextValue(ctx, k, orig) : orig;
                     if (v != null) {
                         bundle.putString(k, v);
                     } else {
@@ -96,17 +117,22 @@ public class CarrierConfigLoader {
                     break;
                 }
                 case BOOL_VALUE: {
-                    Boolean v = Filters.filterBoolValue(ctx, k, c.getBoolValue());
-                    if (v != null) {
-                        bundle.putBoolean(k, v);
+                    boolean orig = c.getBoolValue();
+                    if (filteringEnabled) {
+                        Boolean v = Filters.filterBoolValue(ctx, k, orig);
+                        if (v != null) {
+                            bundle.putBoolean(k, v);
+                        } else {
+                            Log.d(TAG, "filtered out " + k + " = " + c.getBoolValue());
+                        }
                     } else {
-                        Log.d(TAG, "filtered out " + k + " = " + c.getBoolValue());
+                        bundle.putBoolean(k, orig);
                     }
                     break;
                 }
                 case TEXT_ARRAY: {
                     String[] orig = c.getTextArray().getItemList().toArray(new String[0]);
-                    String[] v = Filters.filterTextArray(ctx, k, orig);
+                    String[] v = filteringEnabled ? Filters.filterTextArray(ctx, k, orig) : orig;
                     if (v != null) {
                         bundle.putStringArray(k, v);
                     } else {
@@ -121,7 +147,7 @@ public class CarrierConfigLoader {
                 }
                 case BUNDLE: {
                     CarrierConfig innerCc = c.getBundle();
-                    bundle.putPersistableBundle(k, carrierConfigToBundle(ctx, innerCc));
+                    bundle.putPersistableBundle(k, carrierConfigToBundle(innerCc));
                     break;
                 }
                 case DOUBLE_VALUE: {
@@ -137,15 +163,15 @@ public class CarrierConfigLoader {
         return bundle;
     }
 
-    private static boolean isCurrentApnCSettingsVersion(Context ctx, CSettings cs) {
+    private boolean isCurrentApnCSettingsVersion(CSettings cs) {
         String k = cs.carrierId2.canonicalName;
-        return Prefs.get(ctx, Prefs.Namespace.APN_CSETTINGS_VERSIONS)
+        return Prefs.get(context, Prefs.Namespace.APN_CSETTINGS_VERSIONS)
                 .getLong(k, -1) == cs.protoCSettings.getVersion();
     }
 
-    private static void storeApnCSettingsVersion(Context ctx, CSettings cs) {
+    private void storeApnCSettingsVersion(CSettings cs) {
         String k = cs.carrierId2.canonicalName;
-        SharedPreferences p = Prefs.get(ctx, Prefs.Namespace.APN_CSETTINGS_VERSIONS);
+        SharedPreferences p = Prefs.get(context, Prefs.Namespace.APN_CSETTINGS_VERSIONS);
         var ed = p.edit();
         if (p.getAll().size() > 100) {
             // remove old values
@@ -155,7 +181,7 @@ public class CarrierConfigLoader {
         ed.apply();
     }
 
-    private static void addVersionString(Context ctx, CSettings cSettings, boolean isDefault, PersistableBundle dest) {
+    private void addVersionString(CSettings cSettings, boolean isDefault, PersistableBundle dest) {
         CarrierSettings cs = cSettings.protoCSettings;
 
         var b = new StringBuilder();
@@ -180,9 +206,9 @@ public class CarrierConfigLoader {
 
         var date = new Date(cs.getLastUpdated().getSeconds() * 1000L);
         b.append('\n');
-        b.append(DateFormat.getMediumDateFormat(ctx).format(date));
+        b.append(DateFormat.getMediumDateFormat(context).format(date));
         b.append(' ');
-        b.append(DateFormat.getTimeFormat(ctx).format(date));
+        b.append(DateFormat.getTimeFormat(context).format(date));
 
         dest.putString(CarrierConfigManager.KEY_CARRIER_CONFIG_VERSION_STRING, b.toString());
     }
