@@ -15,19 +15,14 @@ the same configuration data when config editing is disabled in CarrierConfig2.
 Testing is done by checking that CarrierConfig2 and GCS return the same configuration for each
 CarrierId.
 
-Testing can be performed only on debuggable OS builds, it relies on granting privileged permissions 
-to GCS app and hooking it in an invasive way.
-
-To enable the testing mode:
+GCS app can be obtained by unpacking a stock OS factory image.
 ```
-adb shell su root setprop persist.sys.GCarrierSettings_testing_mode_enabled 1
-adb reboot
 adb install $UNPACKED_STOCK_FACTORY_IMAGE/product/priv-app/CarrierSettings/CarrierSettings.apk
 ```
 
 Start the test:
 ```
-adb shell su root am start-activity -S -n app.grapheneos.carrierconfig2/.TestActivity
+adb shell am start-activity -S -n app.grapheneos.carrierconfig2/.TestActivity
 ```
 
 UI shows only the basic info, see logcat of CarrierConfig2 and GCS apps for more details.

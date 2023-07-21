@@ -8,6 +8,9 @@ import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 public class Utils {
 
     @Nullable
@@ -46,5 +49,11 @@ public class Utils {
         var res = new CarrierIdentifier(mcc, mnc, spn, imsi, gid1, null);
         Log.d(TAG, "subId " + subId + "; " + res);
         return res;
+    }
+
+    public static String printStackTraceToString(Throwable t) {
+        var baos = new ByteArrayOutputStream(1000);
+        t.printStackTrace(new PrintStream(baos));
+        return baos.toString();
     }
 }

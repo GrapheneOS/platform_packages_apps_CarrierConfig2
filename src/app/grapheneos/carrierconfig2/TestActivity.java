@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -13,9 +12,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.android.internal.R;
-import com.android.internal.gcarriersettings.TestCarrierConfigService;
-import com.android.internal.gcarriersettings.GCarrierSettingsApp;
-import com.android.internal.gcarriersettings.ICarrierConfigsLoader;
+import com.android.internal.gmscompat.gcarriersettings.GCarrierSettingsApp;
+import com.android.internal.gmscompat.gcarriersettings.ICarrierConfigsLoader;
+import com.android.internal.gmscompat.gcarriersettings.TestCarrierConfigService;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -34,11 +33,6 @@ public class TestActivity extends Activity implements ServiceConnection {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!Build.IS_DEBUGGABLE) {
-            finish();
-            return;
-        }
-
         listAdapter = new ArrayAdapter<>(this, R.layout.simple_list_item_1, R.id.text1);
 
         var lv = new ListView(this);
@@ -53,20 +47,27 @@ public class TestActivity extends Activity implements ServiceConnection {
         i.setComponent(cn);
 
         if (!bindService(i, this, BIND_AUTO_CREATE)) {
-            log("bindService returned false");
+            log("bindService returned false, " + i);
         }
     }
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
+        // intentionally checked after service is connected to avoid TOCTOU race
+        if (!GCarrierSettingsApp.getPackageSpec().validate(getPackageManager(), 0L)) {
+            log("GCarrierSettings app doesn't match its known PackageSpec");
+            return;
+        }
+
         log("onServiceConnected: starting comparison test");
+
         var iCarrierConfigsLoader = ICarrierConfigsLoader.Stub.asInterface(service);
 
         bgExecutor.execute(() -> {
             try {
                 new CmpTest(iCarrierConfigsLoader, this::log).run();
             } catch (Exception e) {
-                log(e.toString());
+                log(Utils.printStackTraceToString(e));
             }
         });
     }

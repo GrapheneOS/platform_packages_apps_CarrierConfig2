@@ -28,9 +28,11 @@
             android:permission="android.permission.WRITE_APN_SETTINGS"
             android:exported="true" />
 
+        <!-- started only through adb, which holds the privileged BIND_CARRIER_SERVICES perm-->
         <activity
             android:name=".TestActivity"
-            android:exported="false" />
+            android:permission="android.permission.BIND_CARRIER_SERVICES"
+            android:exported="true" />
 
     </application>
 </manifest>

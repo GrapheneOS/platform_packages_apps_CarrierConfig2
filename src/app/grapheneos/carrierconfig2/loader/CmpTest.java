@@ -9,8 +9,8 @@ import android.os.SystemClock;
 import android.service.carrier.CarrierIdentifier;
 import android.telephony.CarrierConfigManager;
 
-import com.android.internal.gcarriersettings.TestCarrierConfigService;
-import com.android.internal.gcarriersettings.ICarrierConfigsLoader;
+import com.android.internal.gmscompat.gcarriersettings.ICarrierConfigsLoader;
+import com.android.internal.gmscompat.gcarriersettings.TestCarrierConfigService;
 import com.google.carrier.CarrierId;
 import com.google.carrier.CarrierMap;
 
