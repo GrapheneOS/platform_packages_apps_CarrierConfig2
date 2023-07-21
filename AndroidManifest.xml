@@ -28,5 +28,9 @@
             android:permission="android.permission.WRITE_APN_SETTINGS"
             android:exported="true" />
 
+        <activity
+            android:name=".TestActivity"
+            android:exported="false" />
+
     </application>
 </manifest>
