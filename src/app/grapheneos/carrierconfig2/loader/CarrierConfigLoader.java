@@ -6,14 +6,16 @@ import android.content.SharedPreferences;
 import android.os.PersistableBundle;
 import android.service.carrier.CarrierIdentifier;
 import android.telephony.CarrierConfigManager;
-import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.google.carrier.CarrierConfig;
 import com.google.carrier.CarrierSettings;
+import com.google.carrier.Timestamp;
 
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import app.grapheneos.carrierconfig2.Prefs;
@@ -204,11 +206,15 @@ public class CarrierConfigLoader {
             }
         }
 
-        var date = new Date(cs.getLastUpdated().getSeconds() * 1000L);
-        b.append('\n');
-        b.append(DateFormat.getMediumDateFormat(context).format(date));
-        b.append(' ');
-        b.append(DateFormat.getTimeFormat(context).format(date));
+        try {
+            Timestamp ts = cs.getLastUpdated();
+            String date = Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos())
+                    .atZone(ZoneOffset.UTC).toLocalDate().toString();
+            b.append('\n');
+            b.append(date);
+        } catch (DateTimeException|ArithmeticException e) {
+            Log.e(TAG, "", e);
+        }
 
         dest.putString(CarrierConfigManager.KEY_CARRIER_CONFIG_VERSION_STRING, b.toString());
     }
