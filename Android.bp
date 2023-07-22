@@ -10,6 +10,8 @@ android_app {
     platform_apis: true,
     system_ext_specific: true,
 
+    overrides: ["CarrierConfig"],
+
     static_libs: [
         "libprotobuf-java-lite",
     ],
