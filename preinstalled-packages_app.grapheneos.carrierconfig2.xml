@@ -1,0 +1,5 @@
+<config>
+    <install-in-user-type package="app.grapheneos.carrierconfig2">
+        <install-in user-type="SYSTEM" />
+    </install-in-user-type>
+ </config>

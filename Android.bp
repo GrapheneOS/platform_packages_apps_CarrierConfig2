@@ -21,8 +21,16 @@ android_app {
     },
 
     required: [
+        "preinstalled-packages_app.grapheneos.carrierconfig2.xml",
         "privapp-permissions_app.grapheneos.carrierconfig2.xml",
     ],
+}
+
+prebuilt_etc {
+    name: "preinstalled-packages_app.grapheneos.carrierconfig2.xml",
+    src:  "preinstalled-packages_app.grapheneos.carrierconfig2.xml",
+    sub_dir: "sysconfig",
+    system_ext_specific: true,
 }
 
 prebuilt_etc {
