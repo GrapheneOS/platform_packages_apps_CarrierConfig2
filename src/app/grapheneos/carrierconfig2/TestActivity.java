@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.ext.PackageId;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -54,9 +56,15 @@ public class TestActivity extends Activity implements ServiceConnection {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         // intentionally checked after service is connected to avoid TOCTOU race
-        if (!GCarrierSettingsApp.getPackageSpec().validate(getPackageManager(), 0L)) {
-            log("GCarrierSettings app doesn't match its known PackageSpec");
-            return;
+        PackageManager pm = getPackageManager();
+        try {
+            int packageId = pm.getApplicationInfo(name.getPackageName(), 0).ext().getPackageId();
+            if (packageId != PackageId.G_CARRIER_SETTINGS) {
+                log("GCarrierSettings app doesn't match its known PackageId");
+                return;
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new IllegalStateException(e);
         }
 
         log("onServiceConnected: starting comparison test");
