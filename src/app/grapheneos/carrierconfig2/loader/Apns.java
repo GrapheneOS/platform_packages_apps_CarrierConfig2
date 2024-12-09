@@ -117,6 +117,8 @@ public class Apns {
         cv.put(Telephony.Carriers.LINGERING_NETWORK_TYPE_BITMASK, lntBitmask);
         cv.put(Telephony.Carriers.ALWAYS_ON, i.getAlwaysOn());
         cv.put(Telephony.Carriers.MTU_V6, i.getMtuV6());
+        cv.put(Telephony.Carriers.INFRASTRUCTURE_BITMASK, i.getInfrastructureBitmask());
+        cv.put(Telephony.Carriers.ESIM_BOOTSTRAP_PROVISIONING, i.getEsimBootstrapProvisioning());
 
         return cv;
     }
