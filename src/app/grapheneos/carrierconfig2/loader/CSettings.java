@@ -65,12 +65,12 @@ class CSettings {
     @Nullable
     static CSettings get(CSettingsDir csd, CarrierId2 carrierId2) {
         CSettings cs;
-        Optional<CSettings> cached = csd.cSettingsLookupCache.get(carrierId2.carrierId);
+        Optional<CSettings> cached = csd.cSettingsLookupCache.get(carrierId2.carrierIdExt);
         if (cached != null) {
             cs = cached.orElse(null);
         } else {
             cs = CSettings.getInner(csd, carrierId2);
-            csd.cSettingsLookupCache.put(carrierId2.carrierId, Optional.ofNullable(cs));
+            csd.cSettingsLookupCache.put(carrierId2.carrierIdExt, Optional.ofNullable(cs));
         }
 
         String TAG = "CSettings.get";
@@ -84,8 +84,8 @@ class CSettings {
     }
 
     @Nullable
-    static CSettings get(CSettingsDir csd, CarrierIdentifier carrierId) {
-        CarrierId2 carrierId2 = CarrierId2.get(csd, carrierId);
+    static CSettings get(CSettingsDir csd, CarrierIdentifierExt carrierIdExt) {
+        CarrierId2 carrierId2 = CarrierId2.get(csd, carrierIdExt);
         if (carrierId2 == null) {
             return null;
         }

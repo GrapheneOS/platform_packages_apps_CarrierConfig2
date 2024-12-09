@@ -10,6 +10,7 @@ import java.util.List;
 
 import app.grapheneos.carrierconfig2.loader.Apns;
 import app.grapheneos.carrierconfig2.loader.CSettingsDir;
+import app.grapheneos.carrierconfig2.loader.CarrierIdentifierExt;
 
 import static java.util.Collections.emptyList;
 
@@ -27,11 +28,11 @@ public class ApnServiceImpl extends ApnService {
             return emptyList();
         }
 
-        CarrierIdentifier carrierId = Utils.subIdToCarrierId(this, subId);
-        if (carrierId == null) {
+        CarrierIdentifierExt carrierIdExt = Utils.subIdToCarrierIdExt(this, subId);
+        if (carrierIdExt == null) {
             return emptyList();
         }
 
-        return Apns.getApnContentValues(csd, carrierId);
+        return Apns.getApnContentValues(csd, carrierIdExt);
     }
 }

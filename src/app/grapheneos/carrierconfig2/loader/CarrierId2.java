@@ -14,22 +14,25 @@ import static android.text.TextUtils.nullIfEmpty;
 // See com/google/carrier/carrier_list.proto for more info
 public class CarrierId2 {
     public final String canonicalName;
-    public final CarrierIdentifier carrierId; // AOSP CarrierId
+    public final CarrierIdentifierExt carrierIdExt; // AOSP CarrierId + ICCID
     // CarrierId from CSettingsDir protobuf. Note that it doesn't use the modern integer carrierIds
     public final CarrierId protoCarrierId;
 
-    public CarrierId2(String canonicalName, CarrierIdentifier carrierId, CarrierId protoCarrierId) {
+    public CarrierId2(String canonicalName, CarrierIdentifierExt carrierIdExt,
+                      CarrierId protoCarrierId) {
         this.canonicalName = canonicalName;
-        this.carrierId = carrierId;
+        this.carrierIdExt = carrierIdExt;
         this.protoCarrierId = protoCarrierId;
     }
 
     @Nullable
-    private static CarrierId2 getInner(CSettingsDir csd, CarrierIdentifier carrierId) {
+    private static CarrierId2 getInner(CSettingsDir csd, CarrierIdentifierExt carrierIdExt) {
+        CarrierIdentifier carrierId = carrierIdExt.carrierIdentifier();
         final String mccMnc = carrierId.getMcc() + carrierId.getMnc();
         final String spn = nullIfEmpty(carrierId.getSpn());
         final String imsi = nullIfEmpty(carrierId.getImsi());
         final String gid1 = nullIfEmpty(carrierId.getGid1());
+        final String iccid = nullIfEmpty(carrierIdExt.iccid());
 
         for (CarrierMap carrierMap : csd.getCarrierList().getEntryList()) {
             for (CarrierId candidate : carrierMap.getCarrierIdList()) {
@@ -73,10 +76,17 @@ public class CarrierId2 {
                                 .replaceAll("[xX]", "[0-9]");
                         isMatch = imsi.matches(imsiRegex);
                         break;
+                    case ICCID:
+                        if (iccid == null) {
+                            continue;
+                        }
+                        String candidateIccid = candidate.getIccid();
+                        isMatch = iccid.startsWith(candidateIccid);
+                        break;
                 }
 
                 if (isMatch) {
-                    return new CarrierId2(carrierMap.getCanonicalName(), carrierId, candidate);
+                    return new CarrierId2(carrierMap.getCanonicalName(), carrierIdExt, candidate);
                 }
             }
         }
@@ -84,7 +94,7 @@ public class CarrierId2 {
     }
 
     @Nullable
-    public static CarrierId2 get(CSettingsDir csd, CarrierIdentifier carrierId) {
+    public static CarrierId2 get(CSettingsDir csd, CarrierIdentifierExt carrierId) {
         Optional<CarrierId2> cached = csd.carrierId2LookupCache.get(carrierId);
         CarrierId2 cid2;
         if (cached != null) {

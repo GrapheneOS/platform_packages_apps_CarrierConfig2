@@ -8,6 +8,8 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.service.carrier.CarrierIdentifier;
 import android.telephony.CarrierConfigManager;
+import android.telephony.SubscriptionInfo;
+import android.util.Pair;
 
 import com.android.internal.gmscompat.gcarriersettings.ICarrierConfigsLoader;
 import com.android.internal.gmscompat.gcarriersettings.TestCarrierConfigService;
@@ -80,21 +82,23 @@ public class CmpTest {
         ccl.skipApnUpdate();
 
         for (CarrierId protoCarrierId : carrierMap.getCarrierIdList()) {
-            CarrierIdentifier carrierId = createMatchingAndroidCarrierId(protoCarrierId, random);
+            Pair<CarrierIdentifier, SubscriptionInfo> carrierInfo = createMatchingAndroidCarrierInfo(protoCarrierId, random);
 
-            Bundle gcsConfigs = gcsConfigLoader.getConfigs(carrierId);
+            Bundle gcsConfigs = gcsConfigLoader.getConfigs(carrierInfo.first);
 
             PersistableBundle gcsCarrierConfigs = gcsConfigs.getParcelable(
                     TestCarrierConfigService.KEY_CARRIER_SERVICE_RESULT, PersistableBundle.class);
             // this key is used internally by GCS, it doesn't affect the OS configuration
             gcsCarrierConfigs.remove("_gcs_carrier_version_");
 
-            PersistableBundle ourCarrierServiceResult = ccl.load(carrierId);
+            CarrierIdentifierExt carrierIdExt = new CarrierIdentifierExt(carrierInfo.first, carrierInfo.second.getIccId());
+
+            PersistableBundle ourCarrierServiceResult = ccl.load(carrierIdExt);
             compareCarrierConfigs(canonicalName, gcsCarrierConfigs, ourCarrierServiceResult);
 
             List<ContentValues> gcsApns = Arrays.asList(gcsConfigs.getParcelableArray(
                     TestCarrierConfigService.KEY_APN_SERVICE_RESULT, ContentValues.class));
-            List<ContentValues> ourApns = Apns.getApnContentValues(csd, carrierId);
+            List<ContentValues> ourApns = Apns.getApnContentValues(csd, carrierIdExt);
             compareApns(canonicalName, gcsApns, ourApns);
 
             int num = numProtoCarrierIds.incrementAndGet();
@@ -105,7 +109,7 @@ public class CmpTest {
         return true;
     }
 
-    static CarrierIdentifier createMatchingAndroidCarrierId(CarrierId protoCarrierId, Random rnd) {
+    static Pair<CarrierIdentifier, SubscriptionInfo> createMatchingAndroidCarrierInfo(CarrierId protoCarrierId, Random rnd) {
         String mccMnc = protoCarrierId.getMccMnc();
         checkArgumentInRange(mccMnc.length(), 5, 6, "mccMncLen");
         String mcc = mccMnc.substring(0, 3);
@@ -113,6 +117,7 @@ public class CmpTest {
         String spn = null;
         String imsi = null;
         String gid1 = null;
+        String iccid = "";
 
         switch (protoCarrierId.getMvnoDataCase()) {
             case SPN:
@@ -134,7 +139,7 @@ public class CmpTest {
                 imsi = sb.toString();
                 break;
             }
-            case GID1:
+            case GID1: {
                 var sb = new StringBuilder();
                 sb.append(protoCarrierId.getGid1().toLowerCase());
                 for (int i = 0; i < 2; ++i) {
@@ -144,8 +149,24 @@ public class CmpTest {
                 }
                 gid1 = sb.toString();
                 break;
+            }
+            case ICCID: {
+                var sb = new StringBuilder();
+                sb.append(protoCarrierId.getIccid());
+                for (int i = 0; i < 2; ++i) {
+                    if (rnd.nextBoolean()) {
+                        sb.append(randomDigit(rnd));
+                    }
+                }
+                iccid = sb.toString();
+                break;
+            }
         }
-        return new CarrierIdentifier(mcc, mnc, spn, imsi, gid1, null);
+        var sib = new SubscriptionInfo.Builder();
+        sib.setIccId(iccid);
+        SubscriptionInfo subInfo = sib.build();
+
+        return Pair.create(new CarrierIdentifier(mcc, mnc, spn, imsi, gid1, null), subInfo);
     }
 
     void compareCarrierConfigs(String logTag, PersistableBundle a, PersistableBundle b) {

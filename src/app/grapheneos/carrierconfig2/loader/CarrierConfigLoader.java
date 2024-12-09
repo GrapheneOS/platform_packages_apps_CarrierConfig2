@@ -23,9 +23,6 @@ import app.grapheneos.carrierconfig2.Prefs;
 public class CarrierConfigLoader {
     public static final String TAG = CarrierConfigLoader.class.getSimpleName();
 
-    private static final CarrierIdentifier DEFAULT_CARRIER_ID = new CarrierIdentifier("000", "000",
-            null, null, null, null);
-
     private final Context context;
     private final CSettingsDir csd;
     private boolean filteringEnabled = true;
@@ -45,10 +42,10 @@ public class CarrierConfigLoader {
     }
 
     // carrierId is null when SIM is missing
-    public PersistableBundle load(@Nullable CarrierIdentifier carrierId) {
+    public PersistableBundle load(@Nullable CarrierIdentifierExt carrierIdExt) {
         CSettings cSettings = null;
-        if (carrierId != null) {
-            cSettings = CSettings.get(csd, carrierId);
+        if (carrierIdExt != null) {
+            cSettings = CSettings.get(csd, carrierIdExt);
 
             if (cSettings != null && apnUpdateAllowed) {
                 // OS doesn't request the APNs itself (except for ApnService.onRestoreApns()), carrier
@@ -63,7 +60,7 @@ public class CarrierConfigLoader {
             }
         }
 
-        CSettings defaults = CSettings.get(csd, DEFAULT_CARRIER_ID);
+        CSettings defaults = CSettings.get(csd, CarrierIdentifierExt.DEFAULT);
 
         var bundle = new PersistableBundle();
         if (defaults != null) {

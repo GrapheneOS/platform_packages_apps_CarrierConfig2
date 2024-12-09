@@ -2,7 +2,6 @@ package app.grapheneos.carrierconfig2.loader;
 
 import android.annotation.Nullable;
 import android.os.Environment;
-import android.service.carrier.CarrierIdentifier;
 import android.util.Log;
 import android.util.LruCache;
 
@@ -37,8 +36,8 @@ public class CSettingsDir {
 
     private final File dir;
 
-    final LruCache<CarrierIdentifier, Optional<CarrierId2>> carrierId2LookupCache = new LruCache<>(7);
-    final LruCache<CarrierIdentifier, Optional<CSettings>> cSettingsLookupCache = new LruCache<>(7);
+    final LruCache<CarrierIdentifierExt, Optional<CarrierId2>> carrierId2LookupCache = new LruCache<>(7);
+    final LruCache<CarrierIdentifierExt, Optional<CSettings>> cSettingsLookupCache = new LruCache<>(7);
 
     // dir is required to be fully initialized and immutable for the whole lifetime of CSettingsDir
     public CSettingsDir(File dir) {

@@ -4,6 +4,7 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.service.carrier.CarrierIdentifier;
+import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -11,7 +12,18 @@ import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
+import app.grapheneos.carrierconfig2.loader.CarrierIdentifierExt;
+
 public class Utils {
+
+    @Nullable
+    static CarrierIdentifierExt subIdToCarrierIdExt(Context ctx, int subId) {
+        CarrierIdentifier carrierId = subIdToCarrierId(ctx, subId);
+        if (carrierId == null) {
+            return null;
+        }
+        return new CarrierIdentifierExt(carrierId, getIccid(ctx, subId));
+    }
 
     @Nullable
     static CarrierIdentifier subIdToCarrierId(Context ctx, int subId) {
@@ -49,6 +61,16 @@ public class Utils {
         var res = new CarrierIdentifier(mcc, mnc, spn, imsi, gid1, null);
         Log.d(TAG, "subId " + subId + "; " + res);
         return res;
+    }
+
+    static String getIccid(Context ctx, int subId) {
+        var sm = ctx.getSystemService(SubscriptionManager.class);
+        SubscriptionInfo subInfo = sm.getActiveSubscriptionInfo(subId);
+        if (subInfo == null) {
+            Log.d("getIccid", "getActiveSubscriptionInfo() returned null");
+            return "";
+        }
+        return subInfo.getIccId();
     }
 
     public static String printStackTraceToString(Throwable t) {

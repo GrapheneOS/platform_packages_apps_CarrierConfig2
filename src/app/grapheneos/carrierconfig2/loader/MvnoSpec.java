@@ -28,6 +28,8 @@ class MvnoSpec {
                 return new MvnoSpec(ApnSetting.MVNO_TYPE_GID, protoCarrierId.getGid1());
             case IMSI:
                 return new MvnoSpec(ApnSetting.MVNO_TYPE_IMSI, protoCarrierId.getImsi());
+            case ICCID:
+                return new MvnoSpec(ApnSetting.MVNO_TYPE_ICCID, protoCarrierId.getIccid());
             default:
                 return null;
         }

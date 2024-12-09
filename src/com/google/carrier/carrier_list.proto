@@ -35,6 +35,9 @@ message CarrierId {
 
     // Group identifier (level 1) prefix
     string gid1 = 4;
+
+    // ICCID prefix
+    string iccid = 6;
   }
 
   reserved 5;

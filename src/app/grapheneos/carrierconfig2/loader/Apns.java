@@ -155,8 +155,8 @@ public class Apns {
         Log.d(TAG, "numDeletedRows " + numDeletedRows);
     }
 
-    public static List<ContentValues> getApnContentValues(CSettingsDir csd, CarrierIdentifier carrierId) {
-        CSettings cs = CSettings.get(csd, carrierId);
+    public static List<ContentValues> getApnContentValues(CSettingsDir csd, CarrierIdentifierExt carrierIdExt) {
+        CSettings cs = CSettings.get(csd, carrierIdExt);
         if (cs == null) {
             return emptyList();
         }
