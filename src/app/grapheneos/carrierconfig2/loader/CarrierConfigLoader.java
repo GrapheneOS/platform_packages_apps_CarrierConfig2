@@ -71,9 +71,9 @@ public class CarrierConfigLoader {
 
         if (cSettings != null) {
             bundle.putAll(cSettingsToBundle(cSettings));
-            addVersionString(cSettings, false, bundle);
+            addVersionString(defaults, cSettings, bundle);
         } else if (defaults != null) {
-            addVersionString(defaults, true, bundle);
+            addVersionString(defaults, null, bundle);
         } else {
             return null;
         }
@@ -180,20 +180,38 @@ public class CarrierConfigLoader {
         ed.apply();
     }
 
-    private void addVersionString(CSettings cSettings, boolean isDefault, PersistableBundle dest) {
-        CarrierSettings cs = cSettings.protoCSettings;
+    private void addVersionString(CSettings defaults, @Nullable CSettings cSettings, PersistableBundle dest) {
+        CSettings main = cSettings != null ? cSettings : defaults;
+        CarrierSettings cs = main.protoCSettings;
 
         var b = new StringBuilder();
         b.append(cs.getCanonicalName());
         b.append('-');
         b.append(cs.getVersion());
-        if (!isDefault) {
-            CarrierIdentifier carrierId = cSettings.carrierId2.carrierId;
+        b.append('.');
+        b.append(defaults.protoCSettings.getVersion() % 1_000_000_000);
+
+        try {
+            Instant ts = asInstant(cs.getLastUpdated());
+            if (main != defaults) {
+                Instant defaultsTs = asInstant(defaults.protoCSettings.getLastUpdated());
+                if (defaultsTs.isAfter(ts)) {
+                    ts = defaultsTs;
+                }
+            }
+            String date = ts.atZone(ZoneOffset.UTC).toLocalDate().toString();
+            b.append('\n');
+            b.append(date);
+        } catch (DateTimeException|ArithmeticException e) {
+            Log.e(TAG, "", e);
+        }
+
+        if (cSettings != null) {
+            CarrierIdentifier carrierId = cSettings.carrierId2.carrierIdExt.carrierIdentifier();
             b.append("\nMCC: ");
             b.append(carrierId.getMcc());
             b.append(" MNC: ");
             b.append(carrierId.getMnc());
-
             MvnoSpec mvnoSpec = MvnoSpec.get(cSettings.carrierId2.protoCarrierId);
             if (mvnoSpec != null) {
                 b.append("\nMVNO: ");
@@ -203,16 +221,10 @@ public class CarrierConfigLoader {
             }
         }
 
-        try {
-            Timestamp ts = cs.getLastUpdated();
-            String date = Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos())
-                    .atZone(ZoneOffset.UTC).toLocalDate().toString();
-            b.append('\n');
-            b.append(date);
-        } catch (DateTimeException|ArithmeticException e) {
-            Log.e(TAG, "", e);
-        }
-
         dest.putString(CarrierConfigManager.KEY_CARRIER_CONFIG_VERSION_STRING, b.toString());
+    }
+
+    private static Instant asInstant(Timestamp ts) {
+        return Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos());
     }
 }

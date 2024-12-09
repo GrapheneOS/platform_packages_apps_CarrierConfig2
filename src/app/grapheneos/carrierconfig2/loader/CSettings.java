@@ -56,7 +56,6 @@ class CSettings {
             // versions and timestamps of CarrierSettings inside MultiCarrierSettings are missing,
             // use values from MultiCarrierSettings instead
             b.setVersion(mcs.getVersion());
-            b.setLastUpdated(mcs.getLastUpdated());
             return b.build();
         }
         return null;

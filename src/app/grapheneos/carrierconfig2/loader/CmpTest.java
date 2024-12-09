@@ -179,12 +179,9 @@ public class CmpTest {
 
         var fullKs = new HashSet<>(ksa);
         fullKs.addAll(ksb);
-        // this string is intentionally formatted differently, it's used only in UI and doesn't
-        // affect the actual carrier configuration
-        fullKs.remove(CarrierConfigManager.KEY_CARRIER_CONFIG_VERSION_STRING);
 
         for (String k : fullKs) {
-            compareObjects(logTag, k, a.get(k), b.get(k));
+            compareObjects(logTag, k, a.get(k), b.get(k), true);
         }
     }
 
@@ -209,7 +206,7 @@ public class CmpTest {
             unified.addAll(ksb);
 
             for (String k : unified) {
-                compareObjects(logTag, k, va.get(k), vb.get(k));
+                compareObjects(logTag, k, va.get(k), vb.get(k), false);
             }
         }
     }
@@ -228,7 +225,7 @@ public class CmpTest {
         }
     }
 
-    void compareObjects(String logTag, String k, Object a, Object b) {
+    void compareObjects(String logTag, String k, Object a, Object b, boolean isCarrierConfig) {
         if (Objects.deepEquals(a, b)) {
             return;
         }
@@ -236,6 +233,12 @@ public class CmpTest {
         if (a instanceof PersistableBundle && b instanceof PersistableBundle) {
             compareCarrierConfigs(logTag, (PersistableBundle) a, (PersistableBundle) b);
             return;
+        }
+
+        if (isCarrierConfig && k.equals(CarrierConfigManager.KEY_CARRIER_CONFIG_VERSION_STRING)) {
+            if (((String) b).startsWith((String) a)) {
+                return;
+            }
         }
 
         log(logTag, "difference found, k " + k + " a " + a + " b " + b);
