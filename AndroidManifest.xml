@@ -37,6 +37,7 @@
         <activity
             android:name=".TestActivity"
             android:permission="android.permission.BIND_CARRIER_SERVICES"
+            android:theme="@style/Theme.NoEdgeToEdge"
             android:exported="true" />
 
     </application>
