@@ -21,22 +21,23 @@ android_app {
     },
 
     required: [
-        "preinstalled-packages_app.grapheneos.carrierconfig2.xml",
-        "privapp-permissions_app.grapheneos.carrierconfig2.xml",
+        "etc_permissions_app.grapheneos.carrierconfig2.xml",
+        "etc_sysconfig_app.grapheneos.carrierconfig2.xml",
     ],
 }
 
 prebuilt_etc {
-    name: "preinstalled-packages_app.grapheneos.carrierconfig2.xml",
-    src:  "preinstalled-packages_app.grapheneos.carrierconfig2.xml",
-    sub_dir: "sysconfig",
+    name: "etc_permissions_app.grapheneos.carrierconfig2.xml",
+    src:  "etc/permissions/app.grapheneos.carrierconfig2.xml",
+    sub_dir: "permissions",
+    filename_from_src: true,
     system_ext_specific: true,
 }
 
 prebuilt_etc {
-    name: "privapp-permissions_app.grapheneos.carrierconfig2.xml",
-    src:  "privapp-permissions_app.grapheneos.carrierconfig2.xml",
-    sub_dir: "permissions",
-    system_ext_specific: true,
+    name: "etc_sysconfig_app.grapheneos.carrierconfig2.xml",
+    src:  "etc/sysconfig/app.grapheneos.carrierconfig2.xml",
+    sub_dir: "sysconfig",
     filename_from_src: true,
+    system_ext_specific: true,
 }
