@@ -32,7 +32,7 @@ public class CarrierServiceImpl extends CarrierService {
             carrierIdExt = new CarrierIdentifierExt(carrierId, Utils.getIccid(ctx, subId));
         }
 
-        return new CarrierConfigLoader(ctx, csd).load(carrierIdExt);
+        return new CarrierConfigLoader(ctx, csd).load(subId, carrierIdExt);
     }
 
     @Override

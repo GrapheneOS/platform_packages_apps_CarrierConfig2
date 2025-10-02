@@ -4,9 +4,13 @@ import android.annotation.Nullable;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.PersistableBundle;
+import android.os.RemoteException;
 import android.service.carrier.CarrierIdentifier;
 import android.telephony.CarrierConfigManager;
+import android.telephony.TelephonyFrameworkInitializer;
 import android.util.Log;
+
+import com.android.internal.telephony.ISub;
 
 import com.google.carrier.CarrierConfig;
 import com.google.carrier.CarrierSettings;
@@ -42,7 +46,7 @@ public class CarrierConfigLoader {
     }
 
     // carrierId is null when SIM is missing
-    public PersistableBundle load(@Nullable CarrierIdentifierExt carrierIdExt) {
+    public PersistableBundle load(int subId, @Nullable CarrierIdentifierExt carrierIdExt) {
         CSettings cSettings = null;
         if (carrierIdExt != null) {
             cSettings = CSettings.get(csd, carrierIdExt);
@@ -77,7 +81,29 @@ public class CarrierConfigLoader {
         } else {
             return null;
         }
+
+        final PersistableBundle overrides;
+        try {
+            overrides = getSubService().getExtOverrideConfigs(subId);
+        } catch (RemoteException e) {
+            Log.e(TAG, "overrides unavailable", e);
+            return bundle;
+        }
+
+        if (overrides != null && !overrides.isEmpty()) {
+            Log.d(TAG, "applying " + overrides.size() + " overrides");
+            bundle.putAll(overrides);
+        }
+
         return bundle;
+    }
+
+    private ISub getSubService() {
+        return ISub.Stub.asInterface(
+                TelephonyFrameworkInitializer
+                        .getTelephonyServiceManager()
+                        .getSubscriptionServiceRegisterer()
+                        .get());
     }
 
     private PersistableBundle cSettingsToBundle(CSettings cs) {

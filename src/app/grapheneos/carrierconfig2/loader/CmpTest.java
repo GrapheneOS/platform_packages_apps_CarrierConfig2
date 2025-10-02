@@ -93,7 +93,8 @@ public class CmpTest {
 
             CarrierIdentifierExt carrierIdExt = new CarrierIdentifierExt(carrierInfo.first, carrierInfo.second.getIccId());
 
-            PersistableBundle ourCarrierServiceResult = ccl.load(carrierIdExt);
+            PersistableBundle ourCarrierServiceResult = ccl.load(
+                    carrierInfo.second.getSubscriptionId(), carrierIdExt);
             compareCarrierConfigs(canonicalName, gcsCarrierConfigs, ourCarrierServiceResult);
 
             List<ContentValues> gcsApns = Arrays.asList(gcsConfigs.getParcelableArray(
