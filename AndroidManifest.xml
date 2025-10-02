@@ -9,10 +9,20 @@
     <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_APN_SETTINGS" />
 
+    <permission
+        android:name="app.grapheneos.carrierconfig2.FORCE_UPDATE_CONFIG"
+        android:protectionLevel="signature|privileged" />
+
     <application
         android:label="CarrierConfig2"
         android:defaultToDeviceProtectedStorage="true"
         android:directBootAware="true">
+
+        <provider
+            android:name=".UpdateConfigProvider"
+            android:authorities="app.grapheneos.carrierconfig2.UpdateConfigProvider"
+            android:exported="true"
+            android:permission="app.grapheneos.carrierconfig2.FORCE_UPDATE_CONFIG" />
 
         <service
             android:name=".CarrierServiceImpl"
