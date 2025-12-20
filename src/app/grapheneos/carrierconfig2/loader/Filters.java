@@ -23,9 +23,11 @@ class Filters {
             case CarrierConfigManager.KEY_EDITABLE_ENHANCED_4G_LTE_BOOL:
             case CarrierConfigManager.KEY_EDITABLE_WFC_MODE_BOOL:
             case CarrierConfigManager.KEY_EDITABLE_WFC_ROAMING_MODE_BOOL:
+            case CarrierConfigManager.KEY_HIDE_CARRIER_NETWORK_SETTINGS_BOOL:
             case CarrierConfigManager.KEY_HIDE_ENABLE_2G:
             case CarrierConfigManager.KEY_HIDE_ENHANCED_4G_LTE_BOOL:
             case CarrierConfigManager.KEY_HIDE_IMS_APN_BOOL:
+            case CarrierConfigManager.KEY_HIDE_PREFERRED_NETWORK_TYPE_BOOL:
             case CarrierConfigManager.KEY_HIDE_PRESET_APN_DETAILS_BOOL:
             case CarrierConfigManager.KEY_SHOW_APN_SETTING_CDMA_BOOL:
             case CarrierConfigManager.KEY_VONR_SETTING_VISIBILITY_BOOL:
