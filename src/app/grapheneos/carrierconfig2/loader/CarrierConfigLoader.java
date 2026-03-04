@@ -71,6 +71,7 @@ public class CarrierConfigLoader {
 
         if (cSettings != null) {
             bundle.putAll(cSettingsToBundle(cSettings));
+            VvmConfigOverrides.apply(cSettings.carrierId2.canonicalName, bundle);
             addVersionString(defaults, cSettings, bundle);
         } else if (defaults != null) {
             addVersionString(defaults, null, bundle);
