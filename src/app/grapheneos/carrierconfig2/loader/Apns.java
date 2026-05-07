@@ -151,7 +151,7 @@ public class Apns {
         Log.d(TAG, "uri: " + uri + "; where: " + where
                 + "; selArgs: " + Arrays.toString(selectionArgs));
 
-        int numDeletedRows = cr.delete(uri, where + uneditedClause, selectionArgs);
+        int numDeletedRows = cr.delete(uri, where, selectionArgs);
         Log.d(TAG, "numDeletedRows " + numDeletedRows);
     }
 
