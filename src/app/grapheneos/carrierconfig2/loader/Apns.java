@@ -126,24 +126,21 @@ public class Apns {
     private static void deleteUneditedApnsForCarrierId(Context ctx, CarrierId protoCarrierId) {
         final String TAG = "deleteUneditedApns";
 
-        final String uneditedClause = " AND " +
-                Telephony.Carriers.EDITED_STATUS + "=" + Telephony.Carriers.UNEDITED;
-
         MvnoSpec mvnoSpec = MvnoSpec.get(protoCarrierId);
         String where;
         String[] selectionArgs;
         if (mvnoSpec == null || TextUtils.isEmpty(mvnoSpec.matchData)) {
             where = Telephony.Carriers.NUMERIC + "=? AND "
-                    + Telephony.Carriers.MVNO_TYPE + "=''"
-                    + uneditedClause;
+                    + Telephony.Carriers.MVNO_TYPE + "=''";
             selectionArgs = new String[] { protoCarrierId.getMccMnc() };
         } else {
             where = Telephony.Carriers.NUMERIC + "=? AND "
                     + Telephony.Carriers.MVNO_TYPE + "=? AND "
-                    + Telephony.Carriers.MVNO_MATCH_DATA + "=? COLLATE NOCASE"
-                    + uneditedClause;
+                    + Telephony.Carriers.MVNO_MATCH_DATA + "=? COLLATE NOCASE";
             selectionArgs = new String[] { protoCarrierId.getMccMnc(), mvnoSpec.typeString(), mvnoSpec.matchData };
         }
+
+        where += " AND " + Telephony.Carriers.EDITED_STATUS + "=" + Telephony.Carriers.UNEDITED;
 
         Uri uri = Uri.withAppendedPath(Telephony.Carriers.CONTENT_URI, "delete");
         ContentResolver cr = ctx.getContentResolver();
@@ -151,7 +148,7 @@ public class Apns {
         Log.d(TAG, "uri: " + uri + "; where: " + where
                 + "; selArgs: " + Arrays.toString(selectionArgs));
 
-        int numDeletedRows = cr.delete(uri, where + uneditedClause, selectionArgs);
+        int numDeletedRows = cr.delete(uri, where, selectionArgs);
         Log.d(TAG, "numDeletedRows " + numDeletedRows);
     }
 
