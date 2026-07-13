@@ -22,6 +22,7 @@ import app.grapheneos.carrierconfig2.Prefs;
 
 public class CarrierConfigLoader {
     public static final String TAG = CarrierConfigLoader.class.getSimpleName();
+    private static final Object APN_UPDATE_LOCK = new Object();
 
     private final Context context;
     private final CSettingsDir csd;
@@ -51,11 +52,13 @@ public class CarrierConfigLoader {
                 // OS doesn't request the APNs itself (except for ApnService.onRestoreApns()), carrier
                 // config app is expected to update APNs on its own.
 
-                if (isCurrentApnCSettingsVersion(cSettings)) {
-                    Log.d(TAG, "CSettings version hasn't changed, skipping APN update");
-                } else {
-                    Apns.update(context, cSettings);
-                    storeApnCSettingsVersion(cSettings);
+                synchronized (APN_UPDATE_LOCK) {
+                    if (isCurrentApnCSettingsVersion(cSettings)) {
+                        Log.d(TAG, "CSettings version hasn't changed, skipping APN update");
+                    } else {
+                        Apns.update(context, cSettings);
+                        storeApnCSettingsVersion(cSettings);
+                    }
                 }
             }
         }
